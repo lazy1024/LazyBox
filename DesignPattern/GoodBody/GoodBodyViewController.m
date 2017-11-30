@@ -10,12 +10,16 @@
 
 #import <AudioToolbox/AudioToolbox.h>
 
+#define notificationtag 1024
+
 @interface GoodBodyViewController ()
 @property (weak, nonatomic) IBOutlet UIButton *MainBtn;
 @property (weak, nonatomic) IBOutlet UISwitch *switch30s;
 
 
+
 @property (nonatomic, strong) NSTimer *timer30s;
+
 
 @end
 
@@ -76,10 +80,10 @@
             notification.timeZone = [NSTimeZone defaultTimeZone];
             
             // 5秒之后发出本地通知
-            notification.fireDate = [NSDate dateWithTimeIntervalSinceNow:5];
+            notification.fireDate = [NSDate dateWithTimeIntervalSinceNow:60];
             
             // 设置重复间隔
-            notification.repeatInterval = kCFCalendarUnitDay;
+            notification.repeatInterval = kCFCalendarUnitMinute; //kCFCalendarUnitDay;
             
             // 设置提醒的文字内容
             notification.alertBody   = @"Wake up, man";
@@ -92,55 +96,38 @@
             notification.applicationIconBadgeNumber++;
             
             // 设定通知的userInfo，用来标识该通知
-            NSDictionary*info = [NSDictionary dictionaryWithObject:@"test" forKey:@"name"];
+            NSDictionary*info = [NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithInt:notificationtag],@"fish",nil];
             notification.userInfo = info;
             
             // 设置本地通知
             [[UIApplication sharedApplication] scheduleLocalNotification:notification];
-        }
-
-#if 0
-        NSLog(@"switch30 on");
-        //[self start30sTimer];
-        UILocalNotification *notification = [[UILocalNotification alloc] init];
-        if (notification) {
-            // 设置通知的提醒时间
-            NSDate *currentDate   = [NSDate date];
-            notification.timeZone = [NSTimeZone defaultTimeZone]; // 使用本地时区
-            notification.fireDate = currentDate;
-            
-            // 设置重复间隔
-            notification.repeatInterval = kCFCalendarUnitMinute;
-            
-            // 设置提醒的文字内容
-            notification.alertBody   = @"Wake up, man";
-            notification.alertAction = NSLocalizedString(@"起床了", nil);
-            
-            // 通知提示音 使用默认的
-            notification.soundName= UILocalNotificationDefaultSoundName;
-            
-            // 设置应用程序右上角的提醒个数
-            notification.applicationIconBadgeNumber++;
-            
-            // 设定通知的userInfo，用来标识该通知
-            /*
-            NSMutableDictionary *aUserInfo = [[NSMutableDictionary alloc] init];
-            aUserInfo[kLocalNotificationID] = @"LocalNotificationID";
-            notification.userInfo = aUserInfo;
-             */
-            
-            
-            // 将通知添加到系统中
-            [[UIApplication sharedApplication] scheduleLocalNotification:notification];
-
-        }
         
-#endif
+        
+        }
     }
     else
     {
-        [self stop30sTimer];
-        //NSLog(@"switch30 off");
+        NSArray *narry=[[UIApplication sharedApplication] scheduledLocalNotifications];
+        NSUInteger acount=[narry count];
+        if (acount>0)
+        {
+            // 遍历找到对应nfkey和notificationtag的通知
+            for (int i=0; i<acount; i++)
+            {
+                UILocalNotification *myUILocalNotification = [narry objectAtIndex:i];
+                NSDictionary *userInfo = myUILocalNotification.userInfo;
+                NSNumber *obj = [userInfo objectForKey:@"fish"];
+                int mytag=[obj intValue];
+                if (mytag == notificationtag)
+                {
+                    // 删除本地通知
+                    [[UIApplication sharedApplication] cancelLocalNotification:myUILocalNotification];
+                    
+                    NSLog(@"Remove");
+                    break;
+                }
+            }
+        }
     }
 }
 
