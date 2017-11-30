@@ -54,9 +54,52 @@
     }
 }
 
+- (void)application:(UIApplication *)application didReceiveLocalNotification:(UILocalNotification *)notification
+{
+    // 在这里对通知消息做处理
+}
+
 - (IBAction)switch30sTimer:(id)sender {
     if(_switch30s.on)
     {
+        UIUserNotificationType types = UIUserNotificationTypeBadge | UIUserNotificationTypeSound | UIUserNotificationTypeAlert;
+        UIUserNotificationSettings *settings = [UIUserNotificationSettings settingsForTypes:types categories:nil];
+        [[UIApplication sharedApplication] registerUserNotificationSettings:settings];
+
+        
+        
+        // 初始化本地通知对象
+        UILocalNotification*notification = [[UILocalNotification alloc] init];
+        if (notification) {
+            
+            // 使用本地时区
+            notification.timeZone = [NSTimeZone defaultTimeZone];
+            
+            // 5秒之后发出本地通知
+            notification.fireDate = [NSDate dateWithTimeIntervalSinceNow:5];
+            
+            // 设置重复间隔
+            notification.repeatInterval = kCFCalendarUnitDay;
+            
+            // 设置提醒的文字内容
+            notification.alertBody   = @"Wake up, man";
+            notification.alertAction = NSLocalizedString(@"起床了", nil);
+            
+            // 通知提示音 使用默认的
+            notification.soundName= UILocalNotificationDefaultSoundName;
+            
+            // 设置icon角标
+            notification.applicationIconBadgeNumber++;
+            
+            // 设定通知的userInfo，用来标识该通知
+            NSDictionary*info = [NSDictionary dictionaryWithObject:@"test" forKey:@"name"];
+            notification.userInfo = info;
+            
+            // 设置本地通知
+            [[UIApplication sharedApplication] scheduleLocalNotification:notification];
+        }
+
+#if 0
         NSLog(@"switch30 on");
         //[self start30sTimer];
         UILocalNotification *notification = [[UILocalNotification alloc] init];
@@ -89,7 +132,10 @@
             
             // 将通知添加到系统中
             [[UIApplication sharedApplication] scheduleLocalNotification:notification];
+
         }
+        
+#endif
     }
     else
     {
